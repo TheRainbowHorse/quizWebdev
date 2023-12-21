@@ -5,10 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeModal = document.querySelector('#closeModal');
     const questionTitle = document.querySelector('#question');
     const formAnswers = document.querySelector('#formAnswers');
+    const btnPrev = document.querySelector('#prev');
+    const btnNext = document.querySelector('#next');
 
     btnOpenModal.addEventListener('click', () => {
         modalBlock.classList.add('d-block');
-        playTest();
+        getData('questions.json').then(function(data){
+            playTest(data.questions);
+        });
     })
 
     closeModal.addEventListener('click', () => {
@@ -25,8 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return await response.json();
     }
 
-    const playTest = () => {
-        const renderQuestions = ({ question, answers, type }) => {
+    const playTest = (questions) => {
+        let questionNumber = 0;
+
+        const renderQuestion = ({ question, answers, type }) => {
             questionTitle.textContent = question;
 
             formAnswers.innerHTML = '';
@@ -42,8 +48,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             });
         }
-        getData('questions.json').then(function(data){
-            renderQuestions(data.questions[0]);
+        renderQuestion(questions[questionNumber]);
+
+        btnNext.addEventListener('click', () => {
+            questionNumber++;
+            renderQuestion(questions[questionNumber]);
+            renderControlBtns();
         });
+
+        btnPrev.addEventListener('click', () => {
+            questionNumber--;
+            renderQuestion(questions[questionNumber]);
+            renderControlBtns();
+        });
+
+        const renderControlBtns = () => {
+            if (questionNumber == 0) {
+                btnPrev.classList.add('hide');
+                btnNext.classList.remove('hide');
+            }
+            else if (questionNumber == questions.length - 1) {
+                btnNext.classList.add('hide');
+                btnPrev.classList.remove('hide');
+            }
+            else {
+                btnPrev.classList.remove('hide');
+                btnNext.classList.remove('hide');
+            }
+
+        }
+        renderControlBtns();
     }
 })
