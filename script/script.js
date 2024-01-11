@@ -1,4 +1,6 @@
 'use strict';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, child, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 document.addEventListener('DOMContentLoaded', function() {
     const btnOpenModal = document.querySelector('#btnOpenModal');
     const modalBlock = document.querySelector('#modalBlock');
@@ -9,25 +11,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnNext = document.querySelector('#next');
     const btnSend = document.querySelector('#send');
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyADvZ7YX4Kk6_piSnPNN7k9o4p-GC2wkT4",
+        authDomain: "testburger-d8adb.firebaseapp.com",
+        databaseURL: "https://testburger-d8adb-default-rtdb.firebaseio.com",
+        projectId: "testburger-d8adb",
+        storageBucket: "testburger-d8adb.appspot.com",
+        messagingSenderId: "926076087061",
+        appId: "1:926076087061:web:7af8394b69c87cba91171c",
+        measurementId: "G-M2E68GXBH1"
+    };
+    initializeApp(firebaseConfig);
+
     btnOpenModal.addEventListener('click', () => {
         modalBlock.classList.add('d-block');
-        getData('questions.json').then(function(data){
-            playTest(data.questions);
-        });
+        getData();
     })
 
     closeModal.addEventListener('click', () => {
         modalBlock.classList.remove('d-block');
     })
 
-    const getData = async function(url) {
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Ошибка ${response.status} по адресу ${url}`);
-        }
-
-        return await response.json();
+    const getData = function() {
+        formAnswers.textContent= 'Load';
+        const dbRef = ref(getDatabase());
+        get(child(dbRef, `questions`)).then((snapshot) => {
+            if (snapshot.exists()) {
+                console.log(snapshot.val());
+                playTest(snapshot.val());
+            } else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
     }
 
     const playTest = (questions) => {
@@ -88,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
             checkAnswer();
             questionNumber++;
             renderControlBtns();
+            const db = getDatabase();
+            push(ref(db, 'contacts'), userAnswers);
         };
 
         const renderControlBtns = () => {
